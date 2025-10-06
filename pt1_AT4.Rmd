@@ -1,0 +1,148 @@
+---
+title: "SLE777 PART1 ASSIGNMENT4"
+author: "Keren Reji Mathew"
+date: "2025-09-23"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#importing the tsv file
+
+The R code successfully addresses the need to statistically determine if the growth difference is significant** between the two sites. It utilizes the t.test() function to compare the pre-calculated growth change vectors, `Northeast_diff` and Southwest_diff. The test calculates the probability of observing such a difference by chance, which is extracted and printed as the p-value. The resulting answer is the numerical p-value of $0.05912009$, which is used to infer whether the mean growth rates are statistically different.
+
+```{r}
+
+library("R.utils")
+
+URL="https://raw.githubusercontent.com/ghazkha/Assessment4/refs/heads/main/gene_expression.tsv"
+download.file(URL,destfile="gene_expression.tsv")
+
+list.files()
+```
+
+#Add the column with mean expression and Showing first six rows with mean
+
+The R code solves the initial task of loading data by using read.delim() to import the gene_expression.tsv file into the gene_column data frame. It then executes head() to visually inspect the data, confirming the correct file import, column headers, and initial entries. The result is the table displaying the first six rows of the expression data.
+```{r}
+gene_column <- read.delim("gene_expression.tsv")
+head(gene_column)
+
+```
+
+
+```{r}
+rownames(gene_column) <- gene_column[,1]
+
+gene_column<- gene_column[,-1]
+
+gene_column$mean_column <- rowMeans(gene_column)
+
+head(gene_column)
+print(head)
+```
+
+#Top 10 genes with highest gene expression
+
+The R code addresses the task of ranking genes by expression level. It creates a new data frame, sorted, by applying the order() function to the gene_column. By placing a negative sign (`-`) before the mean_column within the `order()` command, the data frame is effectively sorted in descending order of mean expression. This ranks all genes from highest to lowest expressed. The ultimate goal, based on the assignment comment, is to display the table containing the top 10 genes** from this newly sorted list.
+
+```{r}
+sorted <- gene_column[order(-gene_column$mean_column),]
+```
+
+#Number of genes with mean less than 10
+
+The R code solves the problem of subsetting the gene expression data to isolate low-expressing genes. It uses the which()function on the gene_column data frame to identify all genes where the mean_column value is less than $10$. This filtered subset is saved as the low_mean data frame. The intended result of this operation is the numerical count (i.e., the number of rows) of genes that fall into this low expression category.
+```{r}
+low_mean <- gene_column[which(gene_column$mean_column < 10),]
+```
+
+#Histogram of the mean expression
+
+The R code solves the problem of visually representing the distribution of gene expression means. It uses the hist() function to create a histogram based on the mean_column data from the `sorted` data frame. The function also includes arguments to customize the plot's labels and title for better interpretation. The final answer is the generated histogram chart, which visually depicts how frequently different mean expression values occur.
+```{r}
+hist(sorted$mean_column,xlab="Mean Expression",ylab="Frequency",main="Mean Gene Expression")
+```
+
+
+#Importing the csv file
+
+The R code solves the task of downloading a remote data file by first assigning the GitHub URL for the growth_data.csv to the `URL` variable. It then uses download.file() to retrieve the data from that URL and save it locally in the current directory with the filename growth_data.csv. The problem is solved by successfully fetching the file, making the CSV dataset available for subsequent analysis.
+```{r}
+URL="https://raw.githubusercontent.com/ghazkha/Assessment4/refs/heads/main/growth_data.csv"
+download.file(URL,destfile="growth_data.csv")
+```
+
+#Showing the column names
+
+The R code solves the task of ranking genes by expression level and isolating the top 10. It creates a new data frame, topgenes, by sorting the entire gene_column data set in descending order(highest to lowest) based on the values in the mean_column. It then uses the head() function to extract and present the top 10 rows from this sorted list. The resulting answer is a table showing the IDs and expression values for the ten most highly expressed genes.
+```{r}
+topgenes <- gene_column[order(gene_column$mean_column, decreasing = TRUE), ]
+head(topgenes, 10)
+```
+
+
+#the mean and standard deviation of tree circumference at the start and end for both sites
+The R code addresses the task of calculating central tendency and variability for tree circumference data across two sites and two years. It begins by loading the `growth_data.csv file and then subsets the data into two groups, `North_NE` and `South_SW`, based on site. It then computes the mean and standard deviation for the circumference in both 2005 and 2020 for each of the two sites. The solution provides eight numerical values that summarize the tree growth data.
+```{r}
+growth <- read.csv("growth_data.csv")
+print(growth)
+
+
+North_NE <- growth[grep("northeast", growth$Site), ]
+South_SW <- growth[grep("southwest", growth$Site), ]
+
+ mean(North_NE$Circumf_2005_cm)
+ mean(North_NE$Circumf_2020_cm)
+ mean(South_SW$Circumf_2005_cm)
+ mean(South_SW$Circumf_2020_cm)
+
+ sd(North_NE$Circumf_2005_cm)
+ sd(North_NE$Circumf_2020_cm)
+ sd(South_SW$Circumf_2005_cm)
+ sd(South_SW$Circumf_2020_cm)
+```
+
+
+#box plot of tree circumference at the start and end both sites
+
+The solution utilized R code to address the assignment by generating two distinct box plots, enabling a visual comparison of tree circumference data between 2005 (the start) and 2020 (the end) at two different sites. The first plot was dedicated to the Northeast site, comparing the distribution of measurements from the `North_NE$Circumf_2005_cm` and `North_NE$Circumf_2020_cm` columns. The second plot performed the identical comparison for the Southwest site, using the `South_SW$Circumf_2005_cm` and `South_SW$Circumf_2020_cm` data. By using the `boxplot()` function for both sites, the problem was effectively solved, providing a clear visualization of the change in the distribution, spread, and median tree size over the 15-year period for both study locations.
+```{r}
+boxplot(North_NE$Circumf_2005_cm, North_NE$Circumf_2020_cm,
+        ylab="Circumference",
+        main="Circumference in Northeast in cm",
+        names = c("2005","2020"))
+
+boxplot(South_SW$Circumf_2005_cm, South_SW$Circumf_2020_cm,
+        ylab="Circumference",
+        main="Circumference in Southwest in cm",
+        names = c("2005","2020"))
+```
+
+
+#mean growth over the last 10 years at each site
+
+The problem was solved by calculating the mean tree growth (change in circumference) for the period between 2005 and 2020 at both the Northeast and Southwest sites. For each location, the R code first calculated the individual growth difference for every tree by subtracting the 2005 circumference from the 2020 circumference. Subsequently, the `mean()` function was applied to these difference vectors to derive the average growth value for the entire population at the Northeast site (`Northeast\_mean\_diff`) and the Southwest site (`Southwest\_mean\_diff`), with both results then printed as the final answer.
+```{r}
+Northeast_diff <- North_NE$Circumf_2020_cm - North_NE$Circumf_2005_cm
+Northeast_mean_diff <- mean(Northeast_diff)
+
+Southwest_diff <- South_SW$Circumf_2020_cm - South_SW$Circumf_2005_cm
+Southwest_mean_diff <- mean(Southwest_diff)
+print(Southwest_mean_diff) 
+print(Northeast_mean_diff)
+
+
+```
+
+#Use the t.test to estimate the p-value that the 10 year growth is different at the two sites.
+
+using the t.test() function in R to calculate the p-value, which addresses whether the observed difference in mean tree growth between the Northeast and Southwest sites is statistically significant. The problem was solved by running an independent t-test on the two pre-calculated growth difference vectors, `Northeast_diff` and Southwest_diff. The complete output of this test was stored, and the required p-value was specifically extracted from the result. The final output, $0.05912009$, is the critical value used to evaluate the hypothesis regarding the difference in growth between the two locations.
+```{r}
+t_test_result <- t.test(Northeast_diff, Southwest_diff)
+p_value <- t_test_result$p.value
+print(p_value)
+```
+
+
+

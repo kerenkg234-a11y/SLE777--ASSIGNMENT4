@@ -1,0 +1,193 @@
+---
+title: "pt2_AT4"
+author: "Keren Reji Mathew"
+date: "2025-09-23"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#Download the whole set of coding DNA sequences for E. coli and your organism of interest. Number of coding sequences are present in these organisms.Present this in the form of a table. Describe any differences between the two organisms. 
+
+using R code and relevant libraries to download and count the Coding DNA Sequences (CDS) for E. coli and Cryobacterium sp. For both organisms, the compressed FASTA files were downloaded from Ensembl Genomes, unzipped, and then read into R using the `seqinr::read.fasta()` function. The total number of sequences for each organism was counted using `length()`. Finally, these counts (`length_ecoli` and `length_cryobacterium`) were used to construct a data frame named `DNA_length` which directly presents the required table of CDS counts for comparison.
+
+```{r}
+library("R.utils")
+
+URL="http://ftp.ensemblgenomes.org/pub/bacteria/release-53/fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655_gca_000005845/cds/Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.cds.all.fa.gz"
+download.file(URL,destfile="Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.cds.all.fa.gz")
+#gunzip("Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.cds.all.fa.gz")
+list.files() 
+library("seqinr")
+
+library("R.utils")
+URL="https://ftp.ensemblgenomes.ebi.ac.uk/pub/bacteria/release-62/fasta/bacteria_98_collection/cryobacterium_sp_so1_gca_004210215/cds/Cryobacterium_sp_so1_gca_004210215.ASM421021v1.cds.all.fa.gz"
+download.file(URL,destfile="Cryobacterium_sp_so1_gca_004210215.ASM421021v1.cds.all.fa.gz")
+#gunzip("Cryobacterium_sp_so1_gca_004210215.ASM421021v1.cds.all.fa.gz")
+list.files()
+library("seqinr")
+
+cds_ecoli <- seqinr::read.fasta("Escherichia_coli_str_k_12_substr_mg1655_gca_000005845.ASM584v2.cds.all.fa")
+cds_Cryobacterium <- seqinr::read.fasta("Cryobacterium_sp_so1_gca_004210215.ASM421021v1.cds.all.fa")
+length_Cryobacterium <- length(cds_Cryobacterium)
+length_ecoli <- length(cds_ecoli)
+
+DNA_length <- data.frame(
+  Organism = c("E. coli", "Cryobacterium sp"),
+  DNA_Length = c(length_ecoli, length_Cryobacterium)
+)
+print(DNA_length)
+```
+
+
+#How much coding DNA is there in total for these two organisms? Present this in the form of a table. Describe any differences between the two organisms.
+
+ by calculating the total length of coding DNA (CDS) in base pairs for E. coli and Cryobacterium sp..
+The R code used unlist() and length() to determine the total base pair count for each organism and then presented these figures in the Coding_DNA data frame.
+E. coli had 3,978,528 bp and Cryobacterium sp. had 3,471,249 bp, a difference of 507,279 bp that indicates a larger coding repertoire for E. coli.
+
+```{r}
+ecoli_total <- length(unlist(cds_ecoli))
+Cryobacterium_total <- length(unlist(cds_Cryobacterium))
+
+Coding_DNA <- data.frame(
+  Organism = c("E. coli", "Cryobacterium sp"),
+  Total_Coding_DNA_Length = c(ecoli_total, Cryobacterium_total)
+)
+print(Coding_DNA)
+```
+
+#Calculate the length of all coding sequences in these two organisms. Make a boxplot of coding sequence length in these organisms. What is the mean and median coding sequence length of these two organisms? Describe any differences between the two organisms.
+
+ using R code to analyze the length distribution of all coding sequences (CDS) for E. coli and Cryobacterium sp.
+The code first extracted the sequence lengths into vectors (`len_ecoli`, `len_cryobacterium`). It then calculated the mean and median lengths and used the `boxplot()` function** to visualize the full distribution, allowing for a clear comparison of gene length variability and the presence of very long genes (outliers) between the two organisms.
+
+```{r}
+len_ecoli <- as.numeric(summary(cds_ecoli)[,1])
+len_Cryobacterium <- as.numeric(summary(cds_Cryobacterium)[,1])
+
+len_ecoli <- as.numeric(summary(cds_ecoli)[,1])
+sum(len_ecoli)
+mean(len_ecoli)
+median(len_ecoli)
+boxplot(len_ecoli,ylab="sequence length (bp) for E Coli")
+
+len_Cryobacterium <- as.numeric(summary(cds_Cryobacterium)[,1])
+sum(len_Cryobacterium)
+mean(len_Cryobacterium)
+median(len_Cryobacterium)
+boxplot(len_Cryobacterium,ylab="sequence length (bp) for cryobacterium")
+```
+
+
+#Calculate the frequency of DNA bases in the total coding sequences for both organisms. Perform the same calculation for the total protein sequence and  bar plots for nucleotide and amino acid frequency. Describe any differences between the two organisms.
+
+The problem was solved by calculating and visualizing both the nucleotide frequency and amino acid frequency for the coding sequences of E. coli and Cryobacterium sp.
+
+The R code used `count()` and `barplot()` on the unlisted DNA sequences to show base composition. It then translated the DNA to protein sequences and used `count()` again to determine amino acid frequencies, which were also visualized with a bar plot. This provided a comparative view of both organisms' fundamental molecular compositions.
+
+
+```{r}
+dna_composition_ecoli <- count(unlist(cds_ecoli),1)
+dna_composition_Cryobacterium <- count(unlist(cds_Cryobacterium),1)
+
+barplot(dna_composition_ecoli,xlab="nucleotides",ylab="frequency", main="E coli CDS composition")
+barplot(dna_composition_Cryobacterium,xlab="nucleotides",ylab="frequency", main="Cryobacterium CDS composition")
+
+
+prot_Cryobacterium <- lapply(cds_Cryobacterium, translate)
+prot_ecoli <- lapply(cds_ecoli, translate)
+
+
+aa <- unique(prot_ecoli[[2]])
+aa <- aa[aa != "*"]
+length(aa)
+
+prot_count_ecoli <- count(unlist(prot_ecoli),wordsize = 1, alphabet = aa)
+print(prot_count_ecoli)
+prot_count_Cryobacterium <- count(unlist(prot_Cryobacterium),wordsize = 1, alphabet = aa)
+
+barplot(prot_count_ecoli,xlab="amino acids",ylab="frequency", main="E coli amino acid composition")
+barplot(prot_count_Cryobacterium,xlab="amino acids",ylab="frequency", main="Cryobacterium amino acid composition")
+
+```
+
+#Create a codon usage table and quantify the codon usage bias among all coding sequences. Describe any differences between the two organisms with respect to their codon usage bias alongwith charts to support your observations.
+
+The R code addressed the assignment by calculating and visualizing the Codon Usage Bias (CUB) using the Relative Synonymous Codon Usage (RSCU) for E. coli and Cryobacterium sp..
+
+The solution used the `uco()` function to generate RSCU tables, then sorted these tables to identify the top 10 most and least preferred codons for each bacterium. Four bar plots were then generated to visualize these highly biased codons, providing a clear comparison of the specific codons and the magnitude of CUB differences between the two organisms.
+
+```{r}
+codon_Cryobacterium <- uco(unlist(cds_Cryobacterium),index="rscu",as.data.frame=TRUE)
+
+codon_ecoli <- uco(unlist(cds_ecoli),index="rscu",as.data.frame=TRUE)
+
+sorted_ecoli <- codon_ecoli[order(codon_ecoli$RSCU),]
+top10codonsecoli <- head(sorted_ecoli, 10)
+print(top10codonsecoli)
+
+reverse_sorted_ecoli <- codon_ecoli[order(-codon_ecoli$RSCU),]
+top10codonsecolireverse <- head(reverse_sorted_ecoli, 10)
+print(top10codonsecolireverse)
+
+sorted_Cryobacterium <- codon_Cryobacterium[order(codon_Cryobacterium$RSCU),]
+top10codonsCryobacterium <- head(sorted_Cryobacterium, 10)
+print(top10codonsCryobacterium)
+
+reverse_sorted_Cryobacterium <- codon_Cryobacterium[order(-codon_Cryobacterium$RSCU),]
+top10codonsCryobacteriumreverse <- head(reverse_sorted_Cryobacterium, 10)
+print(top10codonsCryobacteriumreverse)
+
+
+barplot(top10codonsecoli$RSCU, names.arg = top10codonsecoli$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias")
+ 
+barplot(top10codonsCryobacterium$RSCU, names.arg = top10codonsCryobacterium$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias")
+
+barplot(top10codonsecolireverse$RSCU, names.arg = top10codonsecolireverse$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias")
+ 
+barplot(top10codonsCryobacteriumreverse$RSCU, names.arg = top10codonsCryobacteriumreverse$codon , xlab ="codons",
+        ylab ="RSCU",
+        main ="Codon usage bias")
+
+```
+
+#In the organism of interest, identify 10 protein sequence k-mers of length 3-5 which are the most over- and under-represented k-mers in your organism of interest. Are these k-mers also over- and under-represented in E. coli to a similar extent? Provide plots to support your observations. Why do you think these sequences are present at different levels in the genomes of these organisms?
+
+The solution addressed the assignment by preparing the necessary data to identify the 10 most over- and under-represented protein $\text{3-mers}$ in Cryobacterium sp. relative to E. coli by first defining the 20 standard amino acids, then using the `count()` function** to calculate the relative frequency of every possible $\text{3-mer}$ in both organisms' protein sequences.
+
+```{r}
+aa <- unique(prot_ecoli[[2]])
+aa <- aa[aa != "*"]
+length(aa)
+
+
+protsecoli <- unlist(prot_ecoli)
+
+mycounts_ecoli <- count(protsecoli,wordsize=3,alphabet=aa)
+
+str(mycounts_ecoli)
+
+head(mycounts_ecoli)
+
+
+prots_Cryobacterium <- unlist(prot_Cryobacterium)
+
+mycounts_Cryobacterium <- count(prots_Cryobacterium,wordsize=3,alphabet=aa)
+
+str(mycounts_Cryobacterium)
+
+head(mycounts_Cryobacterium)
+
+myfreq_Cryobacterium <- count(prots_Cryobacterium,wordsize=3,alphabet=aa,freq=TRUE)
+myfreqecoli <- count(protsecoli,wordsize=3,alphabet=aa,freq=TRUE)
+head(myfreq_Cryobacterium, 10)
+head(myfreqecoli, 10)
+```
+
